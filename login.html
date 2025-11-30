@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="loginTitle">Login</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="w-full">
+    <header class="w-full eco-gradient text-white py-4 px-6 shadow-lg">
+     <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <h1 class="text-2xl font-bold" data-lang-key="siteTitle">EcoMap.az</h1>
+      <nav>
+       <ul class="flex space-x-4">
+        <li><a href="index.html" class="hover:text-green-200" data-lang-key="homeTab">Home</a></li>
+        <li><a href="login.html" class="font-bold text-green-100" data-lang-key="loginTab">Login</a></li>
+        <li><a href="signin.html" class="hover:text-green-200" data-lang-key="signInTab">Sign In</a></li>
+        <li><a href="dailyquest.html" class="hover:text-green-200" data-lang-key="dailyQuestTab">Daily Quest</a></li>
+        <li>
+         <select class="bg-transparent text-white border-none" onchange="window.location.hash = this.value">
+          <option value="#az" class="text-black" selected>AZ</option>
+          <option value="#en" class="text-black">EN</option>
+          <option value="#es" class="text-black">ES</option>
+          <option value="#zh" class="text-black">ZH</option>
+          <option value="#de" class="text-black">DE</option>
+          <option value="#fr" class="text-black">FR</option>
+          <option value="#tr" class="text-black">TR</option>
+         </select></li>
+       </ul>
+      </nav>
+     </div>
+    </header>
+    <main class="w-full px-6 py-8">
+     <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+       <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-green-400 to-teal-500 h-40 flex items-center justify-center"><span class="text-6xl">♻️</span>
+        </div>
+        <div class="p-4">
+         <h3 class="font-bold text-lg text-gray-800" data-lang-key="recyclingTitle">Recycling</h3>
+         <p class="text-sm text-gray-600" data-lang-key="recyclingDescription">Sorting waste for a cleaner planet.</p>
+        </div>
+       </div>
+       <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-blue-400 to-cyan-500 h-40 flex items-center justify-center"><span class="text-6xl">💧</span>
+        </div>
+        <div class="p-4">
+         <h3 class="font-bold text-lg text-gray-800" data-lang-key="waterConservationTitle">Water Conservation</h3>
+         <p class="text-sm text-gray-600" data-lang-key="waterConservationDescription">Protecting our water resources.</p>
+        </div>
+       </div>
+       <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r from-emerald-400 to-green-500 h-40 flex items-center justify-center"><span class="text-6xl">🌳</span>
+        </div>
+        <div class="p-4">
+         <h3 class="font-bold text-lg text-gray-800" data-lang-key="forestProtectionTitle">Forest Protection</h3>
+         <p class="text-sm text-gray-600" data-lang-key="forestProtectionDescription">Our forests are our future.</p>
+        </div>
+       </div>
+      </div>
+      <div class="login-container mx-auto">
+       <h2 data-lang-key="loginTitle">Login</h2>
+       <form action="#" method="POST">
+        <div class="form-group"><label for="username" data-lang-key="usernameLabel">Username:</label> <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group"><label for="password" data-lang-key="passwordLabel">Password:</label> <input type="password" id="password" name="password" required>
+        </div><button type="submit" class="btn" data-lang-key="loginButton">Login</button>
+       </form>
+       <p data-lang-key="noAccountText">Don't have an account? </p>
+      </div>
+     </div>
+    </main>
+    <script>
+         const translations = {
+             az: {
+                 siteTitle: "EcoMap.az",
+                 homeTab: "Ana Səhifə",
+                 loginTab: "Daxil ol",
+                 signInTab: "Qeydiyyatdan keç",
+                 dailyQuestTab: "Günlük Görev",
+                 loginTitle: "Daxil ol",
+                 usernameLabel: "İstifadəçi adı:",
+                 passwordLabel: "Parol:",
+                 loginButton: "Daxil ol",
+                 noAccountText: "Hesabınız yoxdur?",
+                 recyclingTitle: "Təkrar emal",
+                 recyclingDescription: "Daha təmiz bir planet üçün tullantıları çeşidləmək.",
+                 waterConservationTitle: "Su mühafizəsi",
+                 waterConservationDescription: "Su ehtiyatlarımızı qorumaq.",
+                 forestProtectionTitle: "Meşələrin qorunması",
+                 forestProtectionDescription: "Meşələrimiz bizim gələcəyimizdir."
+             },
+             en: {
+                 siteTitle: "EcoMap.az",
+                 homeTab: "Home",
+                 loginTab: "Login",
+                 signInTab: "Sign In",
+                 dailyQuestTab: "Daily Quest",
+                 loginTitle: "Login",
+                 usernameLabel: "Username:",
+                 passwordLabel: "Password:",
+                 loginButton: "Login",
+                 noAccountText: "Don't have an account?",
+                 recyclingTitle: "Recycling",
+                 recyclingDescription: "Sorting waste for a cleaner planet.",
+                 waterConservationTitle: "Water Conservation",
+                 waterConservationDescription: "Protecting our water resources.",
+                 forestProtectionTitle: "Forest Protection",
+                 forestProtectionDescription: "Our forests are our future."
+             },
+             es: {
+                 siteTitle: "EcoMap.az",
+                 homeTab: "Inicio",
+                 loginTab: "Iniciar Sesión",
+                 signInTab: "Registrarse",
+                 dailyQuestTab: "Búsqueda Diaria",
+                 loginTitle: "Iniciar Sesión",
+                 usernameLabel: "Nombre de usuario:",
+                 passwordLabel: "Contraseña:",
+                 loginButton: "Iniciar Sesión",
+                 noAccountText: "¿No tienes una cuenta?",
+                 recyclingTitle: "Reciclaje",
+                 recyclingDescription: "Clasificar los residuos para un planeta más limpio.",
+                 waterConservationTitle: "Conservación del agua",
+                 waterConservationDescription: "Protegiendo nuestros recursos hídricos.",
+                 forestProtectionTitle: "Protección forestal",
+                 forestProtectionDescription: "Nuestros bosques son nuestro futuro."
+             },
+             zh: {
+                 siteTitle: "EcoMap.az",
+                 homeTab: "主页",
+                 loginTab: "登录",
+                 signInTab: "注册",
+                 dailyQuestTab: "每日任务",
+                 loginTitle: "登录",
+                 usernameLabel: "用户名:",
+                 passwordLabel: "密码:",
+                 loginButton: "登录",
+                 noAccountText: "没有账户？",
+                 recyclingTitle: "回收",
+                 recyclingDescription: "分类废物，共建清洁地球。",
+                 waterConservationTitle: "节约用水",
+                 waterConservationDescription: "保护我们的水资源。",
+                 forestProtectionTitle: "森林保护",
+                 forestProtectionDescription: "我们的森林就是我们的未来。",
+             },
+             de: {
+                 siteTitle: "EcoMap.az",
+                 homeTab: "Startseite",
+                 loginTab: "Anmelden",
+                 signInTab: "Registrieren",
+                 dailyQuestTab: "Tägliche Aufgabe",
+                 loginTitle: "Anmelden",
+                 usernameLabel: "Benutzername:",
+                 passwordLabel: "Passwort:",
+                 loginButton: "Anmelden",
+                 noAccountText: "Noch kein Konto?",
+                 recyclingTitle: "Recycling",
+                 recyclingDescription: "Abfalltrennung für einen saubereren Planeten.",
+                 waterConservationTitle: "Wasserschutz",
+                 waterConservationDescription: "Unsere Wasserressourcen schützen.",
+                 forestProtectionTitle: "Waldschutz",
+                 forestProtectionDescription: "Unsere Wälder sind unsere Zukunft."
+             },
+             fr: {
+                 siteTitle: "EcoMap.az",
+                 homeTab: "Accueil",
+                 loginTab: "Connexion",
+                 signInTab: "S'inscrire",
+                 dailyQuestTab: "Quête Quotidienne",
+                 loginTitle: "Connexion",
+                 usernameLabel: "Nom d'utilisateur:",
+                 passwordLabel: "Mot de passe:",
+                 loginButton: "Connexion",
+                 noAccountText: "Vous n'avez pas de compte ?",
+                 recyclingTitle: "Recyclage",
+                 recyclingDescription: "Trier les déchets pour une planète plus propre.",
+                 waterConservationTitle: "Conservation de l'eau",
+                 waterConservationDescription: "Protéger nos ressources en eau.",
+                 forestProtectionTitle: "Protection des forêts",
+                 forestProtectionDescription: "Nos forêts sont notre avenir."
+             },
+             tr: {
+                 siteTitle: "EcoMap.az",
+                 homeTab: "Ana Sayfa",
+                 loginTab: "Giriş Yap",
+                 signInTab: "Kaydol",
+                 dailyQuestTab: "Günlük Görev",
+                 loginTitle: "Giriş Yap",
+                 usernameLabel: "Kullanıcı Adı:",
+                 passwordLabel: "Parola:",
+                 loginButton: "Giriş Yap",
+                 noAccountText: "Hesabınız yok mu?",
+                 recyclingTitle: "Geri Dönüşüm",
+                 recyclingDescription: "Daha temiz bir planet üçün atıkları ayırmak.",
+                 waterConservationTitle: "Su Tasarrufu",
+                 waterConservationDescription: "Su kaynaklarımızı korumak.",
+                 forestProtectionTitle: "Orman Koruma",
+                 forestProtectionDescription: "Ormanlarımız geleceğimizdir."
+             }
+         };
+
+         function applyTranslations(lang) {
+             document.documentElement.lang = lang;
+             const elements = document.querySelectorAll('[data-lang-key]');
+             elements.forEach(element => {
+                 const key = element.dataset.langKey;
+                 const translation = translations[lang][key];
+                 if (translation) {
+                     element.textContent = translation;
+                 }
+             });
+             document.querySelector('title').textContent = translations[lang].loginTitle;
+         }
+
+         const languageSelector = document.querySelector('select');
+         languageSelector.addEventListener('change', (e) => {
+             const lang = e.target.value.substring(1);
+             localStorage.setItem('selectedLanguage', lang);
+             applyTranslations(lang);
+         });
+
+         const initialLang = localStorage.getItem('selectedLanguage') || 'az';
+         languageSelector.value = `#${initialLang}`;
+         applyTranslations(initialLang);
+    </script>
+</body>
+</html>

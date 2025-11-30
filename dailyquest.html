@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="dailyQuestTitle">Daily Quest</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="w-full">
+    <header class="w-full eco-gradient text-white py-4 px-6 shadow-lg">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <h1 class="text-2xl font-bold" data-lang-key="siteTitle">EcoMap.az</h1>
+            <nav>
+                <ul class="flex space-x-4">
+                    <li><a href="index.html" class="hover:text-green-200" data-lang-key="homeTab">Home</a></li>
+                    <li><a href="login.html" class="hover:text-green-200" data-lang-key="loginTab">Login</a></li>
+                    <li><a href="signin.html" class="hover:text-green-200" data-lang-key="signInTab">Sign In</a></li>
+                    <li><a href="dailyquest.html" class="font-bold text-green-100" data-lang-key="dailyQuestTab">Daily Quest</a></li>
+                    <li>
+                        <select class="bg-transparent text-white border-none" onchange="window.location.hash = this.value">
+                            <option value="#az" class="text-black" selected>AZ</option>
+                            <option value="#en" class="text-black">EN</option>
+                            <option value="#es" class="text-black">ES</option>
+                            <option value="#zh" class="text-black">ZH</option>
+                            <option value="#de" class="text-black">DE</option>
+                            <option value="#fr" class="text-black">FR</option>
+                            <option value="#tr" class="text-black">TR</option>
+                        </select>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="w-full px-6 py-8">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6" data-lang-key="dailyQuestPageTitle">Daily Environmental Quests</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Quest Card 1 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-4xl">🗑️</span>
+                        <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest1Title">Separate Your Waste Today</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-lang-key="quest1Description">Spend 15 minutes properly separating your household waste into recycling categories. Take a photo and share it!</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Complete Quest</button>
+                </div>
+
+                <!-- Quest Card 2 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-4xl">💧</span>
+                        <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest2Title">Save Water During Shower</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-lang-key="quest2Description">Take a shower for 5 minutes or less today. Track your time and feel good about saving water!</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Complete Quest</button>
+                </div>
+
+                <!-- Quest Card 3 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-4xl">🚶‍♀️</span>
+                        <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest3Title">Walk or Bike to Work/School</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-lang-key="quest3Description">Instead of driving, choose an eco-friendly commute. Reduce your carbon footprint!</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Complete Quest</button>
+                </div>
+
+                <!-- Quest Card 4 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-4xl">💡</span>
+                        <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest4Title">Unplug Electronics</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-lang-key="quest4Description">Unplug unused electronics before leaving home. Prevent "phantom" energy consumption!</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Complete Quest</button>
+                </div>
+
+                <!-- Quest Card 5 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-4xl">🌳</span>
+                        <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest5Title">Plant a Seed or Small Plant</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-lang-key="quest5Description">Contribute to greenery by planting a seed or a small plant in your garden or a pot.</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Complete Quest</button>
+                </div>
+
+                <!-- Quest Card 6 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+                    <div class="flex items-center gap-4 mb-4">
+                        <span class="text-4xl">🛍️</span>
+                        <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest6Title">Use Reusable Bags</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4" data-lang-key="quest6Description">When shopping today, use reusable bags instead of plastic ones. Say no to single-use plastics!</p>
+                    <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Complete Quest</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const translations = {
+            az: {
+                siteTitle: "EcoMap.az",
+                homeTab: "Ana Səhifə",
+                loginTab: "Daxil ol",
+                signInTab: "Qeydiyyatdan keç",
+                dailyQuestTab: "Günlük Görev",
+                dailyQuestTitle: "Günlük Görev",
+                dailyQuestPageTitle: "Gündəlik Ekoloji Tapşırıqlar",
+                quest1Title: "Bu gün tullantılarınızı ayırın",
+                quest1Description: "Məişət tullantılarınızı təkrar emal kateqoriyalarına düzgün ayırmaq üçün 15 dəqiqə sərf edin. Şəklini çəkin və paylaşın!",
+                quest2Title: "Duş zamanı suya qənaət edin",
+                quest2Description: "Bu gün 5 dəqiqə və ya daha az duş qəbul edin. Vaxtınıza nəzarət edin və suya qənaət etdiyiniz üçün yaxşı hiss edin!",
+                quest3Title: "İşə/Məktəbə Piyada və ya Velosipedlə gedin",
+                quest3Description: "Maşın sürmək əvəzinə, ekoloji cəhətdən təmiz gediş-gəlişi seçin. Karbon izinizi azaldın!",
+                quest4Title: "Elektronika Cihazlarını Ağıldan Çıxarın",
+                quest4Description: "Evdən çıxmazdan əvvəl istifadə olunmayan elektronika cihazlarını cərəyandan ayırın. \"Fantom\" enerji sərfiyyatının qarşısını alın!",
+                quest5Title: "Toxum və ya Kiçik Bitki əkin",
+                quest5Description: "Bağçanızda və ya qabda toxum və ya kiçik bitki əkərək yaşıllığa töhfə verin.",
+                quest6Title: "Yenidən istifadə edilə bilən çantalar istifadə edin",
+                quest6Description: "Bugün alış-veriş edərkən plastik torbalar əvəzinə təkrar istifadə edilə bilən çantalar istifadə edin. Birdəfəlik plastikə \"yox\" deyin!",
+                completeQuestButton: "Tapşırığı tamamla"
+            },
+            en: {
+                siteTitle: "EcoMap.az",
+                homeTab: "Home",
+                loginTab: "Login",
+                signInTab: "Sign In",
+                dailyQuestTab: "Daily Quest",
+                dailyQuestTitle: "Daily Quest",
+                dailyQuestPageTitle: "Daily Environmental Quests",
+                quest1Title: "Separate Your Waste Today",
+                quest1Description: "Spend 15 minutes properly separating your household waste into recycling categories. Take a photo and share it!",
+                quest2Title: "Save Water During Shower",
+                quest2Description: "Take a shower for 5 minutes or less today. Track your time and feel good about saving water!",
+                quest3Title: "Walk or Bike to Work/School",
+                quest3Description: "Instead of driving, choose an eco-friendly commute. Reduce your carbon footprint!",
+                quest4Title: "Unplug Electronics",
+                quest4Description: "Unplug unused electronics before leaving home. Prevent \"phantom\" energy consumption!",
+                quest5Title: "Plant a Seed or Small Plant",
+                quest5Description: "Contribute to greenery by planting a seed or a small plant in your garden or a pot.",
+                quest6Title: "Use Reusable Bags",
+                quest6Description: "When shopping today, use reusable bags instead of plastic ones. Say no to single-use plastics!",
+                completeQuestButton: "Complete Quest"
+            },
+            es: {
+                siteTitle: "EcoMap.az",
+                homeTab: "Inicio",
+                loginTab: "Iniciar Sesión",
+                signInTab: "Registrarse",
+                dailyQuestTab: "Búsqueda Diaria",
+                dailyQuestTitle: "Búsqueda Diaria",
+                dailyQuestPageTitle: "Misiones Ambientales Diarias",
+                quest1Title: "Separa tus residuos hoy",
+                quest1Description: "Dedica 15 minutos a separar correctamente los residuos domésticos en categorías de reciclaje. ¡Toma una foto y compártela!",
+                quest2Title: "Ahorra agua al ducharte",
+                quest2Description: "Dúchate hoy durante 5 minutos o menos. ¡Controla tu tiempo y siéntete bien por ahorrar agua!",
+                quest3Title: "Ve al trabajo/escuela caminando o en bici",
+                quest3Description: "En lugar de conducir, elige un trayecto ecológico. ¡Reduce tu huella de carbono!",
+                quest4Title: "Desconecta los aparatos electrónicos",
+                quest4Description: "Desconecta los aparatos electrónicos que no utilices antes de salir de casa. ¡Evita el consumo de energía \"fantasma\"!",
+                quest5Title: "Planta una semilla o una pequeña planta",
+                quest5Description: "Contribuye a la vegetación plantando una semilla o una pequeña planta en tu jardín o en una maceta.",
+                quest6Title: "Usa bolsas reutilizables",
+                quest6Description: "Hoy, al hacer la compra, utiliza bolsas reutilizables en lugar de las de plástico. ¡Di no a los plásticos de un solo uso!",
+                completeQuestButton: "Completar Misión"
+            },
+            zh: {
+                siteTitle: "EcoMap.az",
+                homeTab: "主页",
+                loginTab: "登录",
+                signInTab: "注册",
+                dailyQuestTab: "每日任务",
+                dailyQuestTitle: "每日任务",
+                dailyQuestPageTitle: "每日环保任务",
+                quest1Title: "今天分类垃圾",
+                quest1Description: "花15分钟将您的家庭垃圾正确分类到回收类别。拍张照片分享吧！",
+                quest2Title: "淋浴时节约用水",
+                quest2Description: "今天淋浴时间不超过5分钟。记录您的时间，为节约用水感到高兴！",
+                quest3Title: "步行或骑自行车上班/上学",
+                quest3Description: "不开车，选择环保通勤。减少您的碳足迹！",
+                quest4Title: "拔掉电子设备插头",
+                quest4Description: "出门前拔掉不用的电子设备插头。防止“幽灵”能耗！",
+                quest5Title: "种植种子或小植物",
+                quest5Description: "在您的花园或花盆中种植种子或小植物，为绿化做贡献。",
+                quest6Title: "使用可重复使用的袋子",
+                quest6Description: "今天购物时，使用可重复使用的袋子而不是塑料袋。对一次性塑料说不！",
+                completeQuestButton: "完成任务"
+            },
+            de: {
+                siteTitle: "EcoMap.az",
+                homeTab: "Startseite",
+                loginTab: "Anmelden",
+                signInTab: "Registrieren",
+                dailyQuestTab: "Tägliche Aufgabe",
+                dailyQuestTitle: "Tägliche Aufgabe",
+                dailyQuestPageTitle: "Tägliche Umweltschutzaufgaben",
+                quest1Title: "Trenne deinen Müll noch heute",
+                quest1Description: "Verbringe 15 Minuten damit, deinen Hausmüll ordnungsgemäß in Recycling-Kategorien zu trennen. Mach ein Foto und teile es!",
+                quest2Title: "Spare Wasser beim Duschen",
+                quest2Description: "Dusche heute 5 Minuten oder weniger. Achte auf deine Zeit und freue dich über das gesparte Wasser!",
+                quest3Title: "Gehe oder fahre mit dem Fahrrad zur Arbeit/Schule",
+                quest3Description: "Wähle anstelle des Autos einen umweltfreundlichen Weg zur Arbeit. Reduziere deinen CO2-Fußabdruck!",
+                quest4Title: "Elektronik vom Strom trennen",
+                quest4Description: "Ziehe den Stecker ungenutzter Elektronikgeräte, bevor du das Haus verlässt. Verhindere \"Phantom\"-Energieverbrauch!",
+                quest5Title: "Säe einen Samen oder eine kleine Pflanze",
+                quest5Description: "Trage zum Grün bei, indem du einen Samen oder eine kleine Pflanze in deinem Garten oder Topf anpflanzt.",
+                quest6Title: "Verwende wiederverwendbare Taschen",
+                quest6Description: "Verwende heute beim Einkaufen wiederverwendbare Taschen anstelle von Plastiktüten. Sag nein zu Einwegplastik!",
+                completeQuestButton: "Aufgabe erledigen"
+            },
+            fr: {
+                siteTitle: "EcoMap.az",
+                homeTab: "Accueil",
+                loginTab: "Connexion",
+                signInTab: "S'inscrire",
+                dailyQuestTab: "Quête Quotidienne",
+                dailyQuestTitle: "Quête Quotidienne",
+                dailyQuestPageTitle: "Quêtes Environnementales Quotidiennes",
+                quest1Title: "Triez vos déchets aujourd'hui",
+                quest1Description: "Passez 15 minutes à séparer correctement vos déchets ménagers par catégories de recyclage. Prenez une photo et partagez-la !",
+                quest2Title: "Économisez l'eau sous la douche",
+                quest2Description: "Prenez une douche de 5 minutes ou moins aujourd'hui. Suivez votre temps et soyez fier d'économiser l'eau !",
+                quest3Title: "Allez au travail/à l'école à pied ou à vélo",
+                quest3Description: "Au lieu de conduire, choisissez un mode de transport écologique. Réduisez votre empreinte carbone !",
+                quest4Title: "Débranchez les appareils électroniques",
+                quest4Description: "Débranchez les appareils électroniques inutilisés avant de quitter la maison. Évitez la consommation d'énergie \"fantôme\" !",
+                quest5Title: "Plantez une graine ou une petite plante",
+                quest5Description: "Contribuez à la verdure en plantant une graine ou une petite plante dans votre jardin ou un pot.",
+                quest6Title: "Utilisez des sacs réutilisables",
+                quest6Description: "Aujourd'hui, faites vos courses avec des sacs réutilisables au lieu de sacs en plastique. Dites non aux plastiques à usage unique !",
+                completeQuestButton: "Terminer la quête"
+            },
+            tr: {
+                siteTitle: "EcoMap.az",
+                homeTab: "Ana Sayfa",
+                loginTab: "Giriş Yap",
+                signInTab: "Kaydol",
+                dailyQuestTab: "Günlük Görev",
+                dailyQuestTitle: "Günlük Görev",
+                dailyQuestPageTitle: "Günlük Çevre Görevleri",
+                quest1Title: "Bugün Atıklarınızı Ayırın",
+                quest1Description: "Ev atıklarınızı geri dönüşüm kategorilerine ayırmak için 15 dakika harcayın. Fotoğraf çekin ve paylaşın!",
+                quest2Title: "Duş Sırasında Su Tasarrufu Yapın",
+                quest2Description: "Bugün 5 dakika veya daha kısa duş alın. Sürenizi takip edin ve su tasarrufu yaptığınız için iyi hissedin!",
+                quest3Title: "İşe/Okula Yürüyerek veya Bisikletle Gidin",
+                quest3Description: "Araba kullanmak yerine çevre dostu bir ulaşım seçin. Karbon ayak izinizi azaltın!",
+                quest4Title: "Elektronik Cihazların Fişini Çekin",
+                quest4Description: "Evden çıkmadan önce kullanılmayan elektronik cihazların fişini çekin. \"Hayalet\" enerji tüketimini önleyin!",
+                quest5Title: "Tohum veya Küçük Bir Bitki Ekin",
+                quest5Description: "Bahçenize veya bir saksıya tohum və ya kiçik bir bitki əkərək yaşıllığa katkıda bulunun.",
+                quest6Title: "Yeniden Kullanılabilir Çantalar Kullanın",
+                quest6Description: "Bugün alış-veriş yaparken plastik poşetler yerine yeniden kullanılabilir çantalar kullanın. Tek kullanımlık plastiklere hayır deyin!",
+                completeQuestButton: "Görevi Tamamla"
+            }
+        };
+
+        function applyTranslations(lang) {
+            document.documentElement.lang = lang;
+            const elements = document.querySelectorAll('[data-lang-key]');
+            elements.forEach(element => {
+                const key = element.dataset.langKey;
+                const translation = translations[lang][key];
+                if (translation) {
+                    element.textContent = translation;
+                }
+            });
+            document.querySelector('title').textContent = translations[lang].dailyQuestTitle;
+        }
+
+        const languageSelector = document.querySelector('select');
+        languageSelector.addEventListener('change', (e) => {
+            const lang = e.target.value.substring(1);
+            localStorage.setItem('selectedLanguage', lang);
+            applyTranslations(lang);
+        });
+
+        const initialLang = localStorage.getItem('selectedLanguage') || 'az';
+        languageSelector.value = `#${initialLang}`;
+        applyTranslations(initialLang);
+    </script>
+</body>
+</html> 

@@ -1,0 +1,1899 @@
+<!doctype html>
+<html lang="az">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoMap.az - Ekoloji Problemlərin Xəritəsi</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDicmjtzsB8NX1qbo3vTb_tD1ohq&callback=initMap"></script>
+  <style>
+        body {
+            box-sizing: border-box;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+
+        .eco-gradient {
+            background: linear-gradient(135deg, #2dd4bf 0%, #10b981 100%);
+        }
+
+        .problem-card {
+            transition: all 0.3s ease;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-in-progress {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-resolved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .map-container {
+            background: linear-gradient(to bottom, #e0f2fe 0%, #f0fdf4 100%);
+            border-radius: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-marker {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .map-marker:hover {
+            transform: scale(1.3);
+        }
+        
+        #azerbaijanMap:hover {
+            opacity: 0.8;
+        }
+
+        .floating-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 50;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .floating-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 1rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .category-button {
+            transition: all 0.2s ease;
+        }
+
+        .category-button:hover {
+            transform: scale(1.05);
+        }
+
+        .category-button.selected {
+            background-color: #10b981;
+            color: white;
+            border-color: #10b981;
+        }
+
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: #10b981;
+            border-bottom-color: #10b981;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toast.show {
+            display: flex;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .quiz-option {
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            background-color: #f0fdf4;
+            border-color: #10b981;
+        }
+
+        .quiz-option.selected {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .quiz-option.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+        }
+
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #dc2626;
+        }
+
+        /* Add/override for Google Map */
+        #googleMap {
+            width: 100%;
+            height: 500px;
+            border-radius: 1rem;
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="w-full">
+  <!-- Donate Floating Button -->
+  <button id="donateBtn" class="fixed bottom-2 left-[210px] z-50 bg-green-600 text-white px-6 py-3 rounded-full shadow-lg font-bold hover:bg-green-700 transition-all flex items-center gap-2 h-12">
+      <span class="text-2xl">💚</span> Donate
+  </button>
+  <!-- Donate Modal -->
+  <div id="donateModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+      <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full relative">
+          <button id="closeDonateModal" class="absolute top-2 right-4 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
+          <h2 class="text-xl font-bold mb-4 text-gray-800">Təmizliyə Dəstək Ol</h2>
+          <form id="donateForm" class="space-y-4">
+              <div>
+                  <label class="block font-semibold mb-1">Dəstək Növü</label>
+                  <select id="donateType" class="w-full border rounded-lg px-3 py-2">
+                      <option value="tree">🌳 1 = 1 Ağac ək</option>
+                      <option value="water">💧 1 = 1 Su təmizləmə</option>
+                      <option value="recycle">♻️ 1 = 5 kq təkrar emal</option>
+                      <option value="education">📚 1 = 1 şagird maarifləndir</option>
+                  </select>
+              </div>
+              <div>
+                  <label class="block font-semibold mb-1">Məbləğ</label>
+                  <div class="flex gap-2">
+                    <input id="donateAmount" type="number" min="1" value="1" class="w-full border rounded-lg px-3 py-2" required>
+                    <select id="donateCurrency" class="border rounded-lg px-2 py-2">
+                        <option value="usd">$</option>
+                        <option value="azn">₼</option>
+                        <option value="eur">€</option>
+                        <option value="rub">₽</option>
+                        <option value="try">₺</option>
+                    </select>
+                  </div>
+              </div>
+              <div id="donateImpact" class="text-green-700 font-semibold"></div>
+              <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-bold hover:bg-green-700 transition">Dəstək ol</button>
+          </form>
+      </div>
+  </div>
+  <!-- AI Chat Floating Button -->
+  <button id="aiChatBtn" class="fixed bottom-2 left-2 z-50 bg-blue-600 text-white px-5 py-3 rounded-full shadow-lg font-bold hover:bg-blue-700 transition-all flex items-center gap-2 h-12">
+      <span class="text-2xl">🤖</span> AI
+  </button>
+  <!-- Dark/Light Mode Toggle Button -->
+  <button id="themeToggleBtn" class="fixed bottom-2 left-[105px] z-50 bg-gray-600 text-white px-5 py-3 rounded-full shadow-lg font-bold hover:bg-gray-700 transition-all flex items-center gap-2 h-12">
+      <span class="text-2xl">☀️</span>
+  </button>
+  <!-- AI Chat Modal -->
+  <div id="aiChatModal" class="fixed inset-0 bg-black bg-opacity-40 z-50 hidden flex items-center justify-center">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-xs sm:max-w-sm p-4 flex flex-col">
+          <div class="flex justify-between items-center mb-2">
+              <span class="font-bold text-blue-700">Eco AI Assistant</span>
+              <button id="closeAiChat" class="text-2xl text-gray-400 hover:text-gray-700">&times;</button>
+          </div>
+          <div id="aiChatHistory" class="flex-1 overflow-y-auto mb-2 space-y-2 text-sm max-h-60"></div>
+          <form id="aiChatForm" class="flex gap-2 mt-2">
+              <input id="aiChatInput" type="text" class="flex-1 border rounded-lg px-2 py-1" placeholder="Sualınızı yazın..." autocomplete="off" required>
+              <button type="submit" class="bg-blue-600 text-white px-3 rounded-lg font-bold hover:bg-blue-700">Göndər</button>
+          </form>
+      </div>
+  </div>
+  <div id="app" class="w-full min-h-full" style="font-family: system-ui, -apple-system, sans-serif;"><!-- Header -->
+   <header class="w-full eco-gradient text-white py-6 px-6 shadow-lg">
+    <div class="max-w-7xl mx-auto">
+     <div class="flex items-center justify-between">
+      <div>
+       <h1 id="siteTitle" class="text-3xl font-bold">EcoMap.az</h1>
+       <p id="siteSlogan" class="text-sm opacity-90 mt-1">Təmiz Azərbaycan üçün birlikdə</p>
+      </div>
+      <div class="text-6xl">
+       🌱
+      </div>
+     </div>
+     <!-- Problem Info Bar -->
+     <div id="problemInfoBar" class="mt-4 flex flex-wrap gap-4 items-center bg-white bg-opacity-20 rounded-lg px-4 py-2 shadow text-base font-semibold">
+        <span id="problemCount" class="inline-flex items-center gap-1">
+            <span class="text-green-200">📝</span>
+            <span class="text-white">Toplam problem:</span>
+            <span class="text-green-100" id="problemCountValue">0</span>
+        </span>
+        <span id="pendingCount" class="inline-flex items-center gap-1">
+            <span class="text-yellow-200">⏳</span>
+            <span class="text-white">Baxışda:</span>
+            <span class="text-yellow-100" id="pendingCountValue">0</span>
+        </span>
+        <span id="inProgressCount" class="inline-flex items-center gap-1">
+            <span class="text-blue-200">🔄</span>
+            <span class="text-white">İcrada:</span>
+            <span class="text-blue-100" id="inProgressCountValue">0</span>
+        </span>
+        <span id="resolvedCount" class="inline-flex items-center gap-1">
+            <span class="text-emerald-200">✅</span>
+            <span class="text-white">Həll olunub:</span>
+            <span class="text-emerald-100" id="resolvedCountValue">0</span>
+        </span>
+     </div>
+    </div>
+   </header><!-- Main Content -->
+   <main class="w-full px-6 py-8">
+    <div class="max-w-7xl mx-auto"><!-- Tabs -->
+     <div class="border-b border-gray-200 mb-8">
+      <div class="flex gap-2 overflow-x-auto"><button class="tab-button active" data-tab="map">🗺️ Xəritə</button> <button class="tab-button" data-tab="myreports">📋 Mənim Şikayətlərim</button> <button class="tab-button" data-tab="volunteer">🤝 Könüllülük</button> <button class="tab-button" data-tab="education">📚 Maarifləndirmə</button> <button class="tab-button" data-tab="dailyquest">✨ Daily Quest</button>
+      <a href="signin.html" class="tab-button">🔐 Sign In</a>
+      <select class="tab-button" onchange="window.location.hash = this.value">
+          <option value="#az" selected>AZ</option>
+          <option value="#en">EN</option>
+          <option value="#es">ES</option>
+          <option value="#zh">ZH</option>
+          <option value="#de">DE</option>
+          <option value="#fr">FR</option>
+          <option value="#tr">TR</option>
+      </select>
+     </div>
+     </div><!-- Map Tab -->
+     <div id="mapTab" class="tab-content active">
+      <h2 id="mapSectionTitle" class="text-2xl font-bold text-gray-800 mb-6" data-lang-key="mapSectionTitle">Ekoloji Problemlər Xəritəsi</h2>
+      <div class="map-container" style="height: 500px; position: relative; margin-top: 0;">
+        <div id="googleMap"></div>
+      </div>
+      <div class="mt-8">
+       <h3 class="text-xl font-bold text-gray-800 mb-4" data-lang-key="recentProblemsTitle">Son Bildirilən Problemlər</h3>
+       <div id="recentProblems" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      </div>
+     </div><!-- My Reports Tab -->
+     <div id="myreportsTab" class="tab-content">
+      <h2 id="myReportsTitle" class="text-2xl font-bold text-gray-800 mb-6" data-lang-key="myReportsTitle">Mənim Şikayətlərim</h2>
+      <div id="myReportsList" class="space-y-4">
+        <!-- MOCK DATA CARDS START -->
+        <div class="bg-white rounded-xl shadow-lg p-6 flex gap-4 items-start">
+          <div class="text-5xl">🗑️</div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <h3 class="font-bold text-lg text-gray-800" data-lang-key="mockProblem1Title">Parkda zibil yığını</h3>
+              <span class="status-badge status-pending" data-lang-key="statusPending">Baxışda</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3" data-lang-key="mockProblem1Description">Şəhər parkında çoxlu zibil yığılıb, təmizlənməlidir.</p>
+            <div class="flex items-center gap-4 text-xs text-gray-500">
+              <span data-lang-key="categoryGarbage">📍 zibil</span>
+              <span data-lang-key="reporterName">👤 Elvin Məmmədov</span>
+              <span data-lang-key="timeAgo">📅 2 saat əvvəl</span>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-6 flex gap-4 items-start">
+          <div class="text-5xl">🪓</div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <h3 class="font-bold text-lg text-gray-800" data-lang-key="mockProblem2Title">Ağacların kəsilməsi</h3>
+              <span class="status-badge status-in-progress" data-lang-key="statusInProgress">İcrada</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3" data-lang-key="mockProblem2Description">Küçəmizdə bir neçə ağac qanunsuz kəsilib.</p>
+            <div class="flex items-center gap-4 text-xs text-gray-500">
+              <span data-lang-key="categoryTree">📍 ağac</span>
+              <span data-lang-key="reporterName">👤 Aygün Əliyeva</span>
+              <span data-lang-key="timeAgo">📅 5 saat əvvəl</span>
+            </div>
+          </div>
+        </div>
+        <div class="bg-white rounded-xl shadow-lg p-6 flex gap-4 items-start">
+          <div class="text-5xl">💧</div>
+          <div class="flex-1">
+            <div class="flex items-start justify-between mb-2">
+              <h3 class="font-bold text-lg text-gray-800" data-lang-key="mockProblem3Title">Su kəsintisi</h3>
+              <span class="status-badge status-resolved" data-lang-key="statusResolved">Həll olunub</span>
+            </div>
+            <p class="text-sm text-gray-600 mb-3" data-lang-key="mockProblem3Description">Son günlərdə məhəllədə su tez-tez kəsilir.</p>
+            <div class="flex items-center gap-4 text-xs text-gray-500">
+              <span data-lang-key="categoryWater">📍 su</span>
+              <span data-lang-key="reporterName">👤 Murad Quliyev</span>
+              <span data-lang-key="timeAgo">📅 1 gün əvvəl</span>
+            </div>
+          </div>
+        </div>
+        <!-- MOCK DATA CARDS END -->
+      </div>
+      <div id="emptyReportsMessage" class="text-center py-12 hidden">
+       <div class="text-6xl mb-4">
+        📭
+       </div>
+       <p class="text-gray-600 text-lg" data-lang-key="emptyReportsMessage">Hələ heç bir şikayət bildirməmisiniz</p>
+       <p class="text-gray-500 text-sm mt-2" data-lang-key="emptyReportsInstruction">Problem bildirmək üçün "Problem Bildir" düyməsini klikləyin</p>
+      </div>
+     </div><!-- Volunteer Tab -->
+     <div id="volunteerTab" class="tab-content">
+      <h2 id="volunteerSectionTitle" class="text-2xl font-bold text-gray-800 mb-6" data-lang-key="volunteerSectionTitle">Könüllülük və Tədbirlər</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+       <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2" data-lang-key="futureEventsTitle"><span class="text-2xl">📅</span> Gələcək Tədbirlər</h3>
+        <div class="space-y-4">
+         <div class="border-l-4 border-green-500 pl-4 py-2">
+          <h4 class="font-semibold text-gray-800" data-lang-key="event1Title">Yaşıl Bakı Təmizlik Aksiyası</h4>
+          <p class="text-sm text-gray-600" data-lang-key="event1Date">Tarix: 15 Aprel 2024</p>
+          <p class="text-sm text-gray-600" data-lang-key="event1Location">Yer: Milli Park</p>
+          <p class="text-xs text-gray-500 mt-1" data-lang-key="event1Volunteers">45 könüllü qeydiyyatdan keçib</p>
+         </div>
+         <div class="border-l-4 border-blue-500 pl-4 py-2">
+          <h4 class="font-semibold text-gray-800" data-lang-key="event2Title">Ağac Əkmə Kampaniyası</h4>
+          <p class="text-sm text-gray-600" data-lang-key="event2Date">Tarix: 22 Aprel 2024</p>
+          <p class="text-sm text-gray-600" data-lang-key="event2Location">Yer: Hökümət Evi parkı</p>
+          <p class="text-xs text-gray-500 mt-1" data-lang-key="event2Volunteers">28 könüllü qeydiyyatdan keçib</p>
+         </div>
+         <div class="border-l-4 border-teal-500 pl-4 py-2">
+          <h4 class="font-semibold text-gray-800" data-lang-key="event3Title">Sahil Zolağı Təmizliyi</h4>
+          <p class="text-sm text-gray-600" data-lang-key="event3Date">Tarix: 1 May 2024</p>
+          <p class="text-sm text-gray-600" data-lang-key="event3Location">Yer: Dəniz Bulvarı</p>
+          <p class="text-xs text-gray-500 mt-1" data-lang-key="event3Volunteers">62 könüllü qeydiyyatdan keçib</p>
+         </div>
+        </div>
+       </div>
+       <div class="bg-white rounded-xl shadow-lg p-6">
+        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2" data-lang-key="topVolunteersTitle"><span class="text-2xl">🏆</span> Ən Aktiv Könüllülər</h3>
+        <div class="space-y-3">
+         <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+          <div class="flex items-center gap-3"><span class="text-2xl">🥇</span>
+           <div>
+            <div class="font-semibold text-gray-800" data-lang-key="volunteer1Name">
+             Leyla M.
+            </div>
+            <div class="text-xs text-gray-600" data-lang-key="volunteer1Activity">
+             127 fəaliyyət
+            </div>
+           </div>
+          </div>
+          <div class="text-lg" data-lang-key="volunteer1Stars">
+           ⭐⭐⭐⭐⭐
+          </div>
+         </div>
+         <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div class="flex items-center gap-3"><span class="text-2xl">🥈</span>
+           <div>
+            <div class="font-semibold text-gray-800" data-lang-key="volunteer2Name">
+             Rəşad A.
+            </div>
+            <div class="text-xs text-gray-600" data-lang-key="volunteer2Activity">
+             98 fəaliyyət
+            </div>
+           </div>
+          </div>
+          <div class="text-lg" data-lang-key="volunteer2Stars">
+           ⭐⭐⭐⭐
+          </div>
+         </div>
+         <div class="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
+          <div class="flex items-center gap-3"><span class="text-2xl">🥉</span>
+           <div>
+            <div class="font-semibold text-gray-800" data-lang-key="volunteer3Name">
+             Nigar S.
+            </div>
+            <div class="text-xs text-gray-600" data-lang-key="volunteer3Activity">
+             84 fəaliyyət
+            </div>
+           </div>
+          </div>
+          <div class="text-lg" data-lang-key="volunteer3Stars">
+           ⭐⭐⭐⭐
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div><!-- Education Tab -->
+     <div id="educationTab" class="tab-content">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6" data-lang-key="educationSectionTitle">Maarifləndirmə</h2>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+       <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="bg-gradient-to-r from-green-400 to-teal-500 h-40 flex items-center justify-center"><span class="text-6xl">♻️</span>
+        </div>
+        <div class="p-6">
+         <h3 class="font-bold text-lg text-gray-800 mb-2" data-lang-key="recyclingTitle">Tullantıların Ayrılması</h3>
+         <p class="text-sm text-gray-600 mb-4" data-lang-key="recyclingDescription">Tullantıları düzgün ayırıb təkrar emal etməklə təbiəti qoruyaq</p><button onclick="showEducationDetail('recycling')" class="text-green-600 font-semibold text-sm hover:underline" data-lang-key="learnMoreButton">Daha ətraflı →</button>
+        </div>
+       </div>
+       <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="bg-gradient-to-r from-blue-400 to-cyan-500 h-40 flex items-center justify-center"><span class="text-6xl">💧</span>
+        </div>
+        <div class="p-6">
+         <h3 class="font-bold text-lg text-gray-800 mb-2" data-lang-key="waterConservationTitle">Su Qənaəti</h3>
+         <p class="text-sm text-gray-600 mb-4" data-lang-key="waterConservationDescription">Su resurslarını qorumaq hər birimizin borcudur</p><button onclick="showEducationDetail('water')" class="text-blue-600 font-semibold text-sm hover:underline" data-lang-key="learnMoreButton">Daha ətraflı →</button>
+        </div>
+       </div>
+       <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+        <div class="bg-gradient-to-r from-emerald-400 to-green-500 h-40 flex items-center justify-center"><span class="text-6xl">🌳</span>
+        </div>
+        <div class="p-6">
+         <h3 class="font-bold text-lg text-gray-800 mb-2" data-lang-key="forestProtectionTitle">Meşələrin Qorunması</h3>
+         <p class="text-sm text-gray-600 mb-4" data-lang-key="forestProtectionDescription">Meşələrimiz gələcəyimizdir, onları qoruyaq</p><button onclick="showEducationDetail('forest')" class="text-emerald-600 font-semibold text-sm hover:underline" data-lang-key="learnMoreButton">Daha ətraflı →</button>
+        </div>
+       </div>
+      </div>
+      <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+       <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2" data-lang-key="testYourKnowledgeTitle"><span class="text-2xl">🎯</span> Ekologiya Bilginizi Yoxlayın</h3>
+       <div class="space-y-4">
+        <div onclick="startQuiz('waste')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 transition-colors cursor-pointer">
+         <div class="flex items-center justify-between">
+          <div>
+           <h4 class="font-semibold text-gray-800" data-lang-key="wasteQuizTitle">Tullantıların İdarə Olunması Testi</h4>
+           <p class="text-sm text-gray-600" data-lang-key="quizTimeWaste">10 sual • 5 dəqiqə</p>
+          </div><span class="text-2xl">📝</span>
+         </div>
+        </div>
+        <div onclick="startQuiz('climate')" class="p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 transition-colors cursor-pointer">
+         <div class="flex items-center justify-between">
+          <div>
+           <h4 class="font-semibold text-gray-800" data-lang-key="climateQuizTitle">İqlim Dəyişikliyi Bilgi Testi</h4>
+           <p class="text-sm text-gray-600" data-lang-key="quizTimeClimate">10 sual • 5 dəqiqə</p>
+          </div><span class="text-2xl">🌡️</span>
+         </div>
+        </div>
+       </div>
+      </div>
+      <div class="mt-8 bg-white rounded-xl shadow-lg p-6">
+       <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2" data-lang-key="contactUsTitle"><span class="text-2xl">📧</span> Bizimlə Əlaqə</h3>
+       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-4">
+         <div class="flex items-start gap-3"><span class="text-2xl">📍</span>
+          <div>
+           <h4 class="font-semibold text-gray-800" data-lang-key="addressTitle">Ünvan</h4>
+           <p class="text-sm text-gray-600" data-lang-key="addressContent">Bakı şəhəri, Nəsimi rayonu<br>
+            Azadlıq prospekti 123</p>
+          </div>
+         </div>
+         <div class="flex items-start gap-3"><span class="text-2xl">📞</span>
+          <div>
+           <h4 class="font-semibold text-gray-800" data-lang-key="phoneTitle">Telefon</h4>
+           <p class="text-sm text-gray-600" data-lang-key="phoneContent">+994 12 345 67 89<br>
+            +994 50 123 45 67</p>
+          </div>
+         </div>
+         <div class="flex items-start gap-3"><span class="text-2xl">✉️</span>
+          <div>
+           <h4 class="font-semibold text-gray-800" data-lang-key="emailTitle">E-poçt</h4>
+           <p class="text-sm text-gray-600" data-lang-key="emailContent">info@ecomap.az<br>
+            destek@ecomap.az</p>
+          </div>
+         </div>
+        </div>
+        <form id="contactForm" class="space-y-3" onsubmit="handleContactSubmit(event)">
+         <div><label class="block text-sm font-semibold text-gray-700 mb-1" data-lang-key="fullNameLabel">Ad Soyad</label> <input type="text" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm" placeholder="Ad və Soyad">
+         </div>
+         <div><label class="block text-sm font-semibold text-gray-700 mb-1" data-lang-key="emailLabel">E-poçt</label> <input type="email" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm" placeholder="E-poçt">
+         </div>
+         <div><label class="block text-sm font-semibold text-gray-700 mb-1" data-lang-key="messageLabel">Mesaj</label> <textarea required rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm" placeholder="Mesaj"></textarea>
+         </div><button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors" data-lang-key="sendButton"> Göndər </button>
+        </form>
+       </div>
+      </div>
+     </div>
+     <div id="dailyquestTab" class="tab-content">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6" data-lang-key="dailyQuestPageTitle">Gündəlik Ekoloji Tapşırıqlar</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <!-- Quest Card 1 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <div class="flex items-center gap-4 mb-4">
+                  <span class="text-4xl">🗑️</span>
+                  <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest1Title">Tullantılarınızı ayırın</h3>
+              </div>
+              <p class="text-gray-600 mb-4" data-lang-key="quest1Description">Məişət tullantılarınızı təkrar emal kateqoriyalarına düzgün ayırmaq üçün 15 dəqiqə sərf edin. Şəklini çəkin və paylaşın!</p>
+              <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Tapşırığı tamamla</button>
+          </div>
+
+          <!-- Quest Card 2 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <div class="flex items-center gap-4 mb-4">
+                  <span class="text-4xl">💧</span>
+                  <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest2Title">Duş zamanı suya qənaət edin</h3>
+              </div>
+              <p class="text-gray-600 mb-4" data-lang-key="quest2Description">Bu gün 5 dəqiqə və ya daha az duş qəbul edin. Vaxtınıza nəzarət edin və suya qənaət etdiyiniz üçün yaxşı hiss edin!</p>
+              <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Tapşırığı tamamla</button>
+          </div>
+
+          <!-- Quest Card 3 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <div class="flex items-center gap-4 mb-4">
+                  <span class="text-4xl">🚶‍♀️</span>
+                  <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest3Title">İşə/Məktəbə Piyada və ya Velosipedlə gedin</h3>
+              </div>
+              <p class="text-gray-600 mb-4" data-lang-key="quest3Description">Maşın sürmək əvəzinə, ekoloji cəhətdən təmiz gediş-gəlişi seçin. Karbon izinizi azaldın!</p>
+              <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Tapşırığı tamamla</button>
+          </div>
+
+          <!-- Quest Card 4 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <div class="flex items-center gap-4 mb-4">
+                  <span class="text-4xl">💡</span>
+                  <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest4Title">Elektronika Cihazlarını Ağıldan Çıxarın</h3>
+              </div>
+              <p class="text-gray-600 mb-4" data-lang-key="quest4Description">Evdən çıxmazdan əvvəl istifadə olunmayan elektronika cihazlarını cərəyandan ayırın. "Fantom" enerji sərfiyyatının qarşısını alın!</p>
+              <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Tapşırığı tamamla</button>
+          </div>
+
+          <!-- Quest Card 5 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <div class="flex items-center gap-4 mb-4">
+                  <span class="text-4xl">🌳</span>
+                  <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest5Title">Toxum və ya Kiçik Bitki əkin</h3>
+              </div>
+              <p class="text-gray-600 mb-4" data-lang-key="quest5Description">Bağçanızda və ya qabda toxum və ya kiçik bitki əkərək yaşıllığa töhfə verin.</p>
+              <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Tapşırığı tamamla</button>
+          </div>
+
+          <!-- Quest Card 6 -->
+          <div class="bg-white rounded-xl shadow-lg overflow-hidden p-6">
+              <div class="flex items-center gap-4 mb-4">
+                  <span class="text-4xl">🛍️</span>
+                  <h3 class="font-bold text-xl text-gray-800" data-lang-key="quest6Title">Yenidən istifadə edilə bilən çantalar istifadə edin</h3>
+              </div>
+              <p class="text-gray-600 mb-4" data-lang-key="quest6Description">Bu gün alış-veriş edərkən plastik torbalar əvəzinə təkrar istifadə edilə bilən çantalar istifadə edin. Birdəfəlik plastikə "yox" deyin!</p>
+              <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors" data-lang-key="completeQuestButton">Tapşırığı tamamla</button>
+          </div>
+      </div>
+     </div>
+    </div>
+   </main><!-- Floating Add Button -->
+   <button id="addProblemBtn" class="floating-button bg-green-600 text-white px-6 py-4 rounded-full font-bold hover:bg-green-700">
+     <span class="flex items-center gap-2">
+       <span class="text-2xl">➕</span>
+       <span id="addProblemButtonText">Problem Bildir</span>
+     </span>
+   </button>
+   <!-- Add Problem Modal -->
+   <div id="addProblemModal" class="modal">
+    <div class="modal-content">
+     <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+       <h3 class="text-2xl font-bold text-gray-800">Yeni Problem Bildir</h3><button id="closeModalBtn" class="text-gray-500 hover:text-gray-700 text-3xl leading-none">×</button>
+      </div>
+      <form id="problemForm" class="space-y-4">
+       <div><label for="problemTitle" class="block text-sm font-semibold text-gray-700 mb-2">Başlıq</label> <input type="text" id="problemTitle" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Məsələn: Zibil yığını parkda">
+       </div>
+       <div><label for="problemDescription" class="block text-sm font-semibold text-gray-700 mb-2">Təsvir</label> <textarea id="problemDescription" required rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Problemi ətraflı təsvir edin..."></textarea>
+       </div>
+       <div><label class="block text-sm font-semibold text-gray-700 mb-2">Kateqoriya</label>
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3"><button type="button" class="category-button border-2 border-gray-300 rounded-lg py-3 px-4 text-center hover:border-green-500" data-category="zibil" data-emoji="🗑️">
+          <div class="text-3xl mb-1">
+           🗑️
+          </div>
+          <div class="text-xs font-semibold">
+           Zibil
+          </div></button> <button type="button" class="category-button border-2 border-gray-300 rounded-lg py-3 px-4 text-center hover:border-green-500" data-category="cirklənmə" data-emoji="🏭">
+          <div class="text-3xl mb-1">
+           🏭
+          </div>
+          <div class="text-xs font-semibold">
+           Çirklənmə
+          </div></button> <button type="button" class="category-button border-2 border-gray-300 rounded-lg py-3 px-4 text-center hover:border-green-500" data-category="ağac" data-emoji="🪓">
+          <div class="text-3xl mb-1">
+           🪓
+          </div>
+          <div class="text-xs font-semibold">
+           Ağac
+          </div></button> <button type="button" class="category-button border-2 border-gray-300 rounded-lg py-3 px-4 text-center hover:border-green-500" data-category="səs-küy" data-emoji="🔊">
+          <div class="text-3xl mb-1">
+           🔊
+          </div>
+          <div class="text-xs font-semibold">
+           Səs-küy
+          </div></button> <button type="button" class="category-button border-2 border-gray-300 rounded-lg py-3 px-4 text-center hover:border-green-500" data-category="su" data-emoji="💧">
+          <div class="text-3xl mb-1">
+           💧
+          </div>
+          <div class="text-xs font-semibold">
+           Su
+          </div></button> <button type="button" class="category-button border-2 border-gray-300 rounded-lg py-3 px-4 text-center hover:border-green-500" data-category="digər" data-emoji="⚠️">
+          <div class="text-3xl mb-1">
+           ⚠️
+          </div>
+          <div class="text-xs font-semibold">
+           Digər
+          </div></button>
+        </div>
+       </div>
+       <div><label for="reporterName" class="block text-sm font-semibold text-gray-700 mb-2">Adınız</label> <input type="text" id="reporterName" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" placeholder="Ad və Soyad">
+       </div>
+       <div class="flex gap-3 pt-4"><button type="submit" id="submitProblemBtn" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-colors"> Göndər </button> <button type="button" id="cancelModalBtn" class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition-colors"> Ləğv et </button>
+       </div>
+      </form>
+     </div>
+    </div>
+   </div><!-- Education Detail Modal -->
+   <div id="educationDetailModal" class="modal">
+    <div class="modal-content">
+     <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+       <h3 id="educationDetailTitle" class="text-2xl font-bold text-gray-800"></h3><button onclick="closeEducationDetail()" class="text-gray-500 hover:text-gray-700 text-3xl leading-none">×</button>
+      </div>
+      <div id="educationDetailContent" class="prose max-w-none"></div>
+     </div>
+    </div>
+   </div><!-- Quiz Modal -->
+   <div id="quizModal" class="modal">
+    <div class="modal-content">
+     <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+       <h3 id="quizTitle" class="text-2xl font-bold text-gray-800"></h3><button onclick="closeQuiz()" class="text-gray-500 hover:text-gray-700 text-3xl leading-none">×</button>
+      </div>
+      <div id="quizContent"></div>
+     </div>
+    </div>
+   </div><!-- Toast Notification -->
+   <div id="toast" class="toast"><span id="toastIcon" class="text-2xl"></span> <span id="toastMessage" class="font-semibold"></span>
+   </div>
+  </div>
+  <script>
+        const defaultConfig = {
+            background_color: "#f0fdf4",
+            surface_color: "#ffffff",
+            text_color: "#1f2937",
+            primary_action_color: "#10b981",
+            secondary_action_color: "#2dd4bf",
+            font_family: "system-ui, -apple-system, sans-serif",
+            font_size: 16,
+            site_title: "EcoMap.az",
+            site_slogan: "Təmiz Azərbaycan üçün birlikdə",
+            add_problem_button: "Problem Bildir",
+            map_section_title: "Ekoloji Problemlər Xəritəsi",
+            my_reports_title: "Mənim Şikayətlərim",
+            volunteer_section_title: "Könüllülük və Tədbirlər"
+        };
+
+        let selectedCategory = '';
+        let selectedCategoryEmoji = '';
+        let allProblems = [];
+        let currentQuiz = null;
+        let currentQuestionIndex = 0;
+        let quizScore = 0;
+        let map = null;
+        let markers = [];
+
+        const educationContent = {
+            recycling: {
+                title: "♻️ Tullantıların Ayrılması",
+                content: `
+                    <h4 class="text-lg font-bold mb-3">Tullantıların Ayrılması Niyə Vacibdir?</h4>
+                    <p class="mb-4">Tullantıların düzgün ayrılması və təkrar emalı ətraf mühitin qorunmasında mühüm rol oynayır. Bu, təbii resursların qorunmasına, enerji qənaətinə və ��irklənmənin azaldılmasına kömək edir.</p>
+                    
+                    <h4 class="text-lg font-bold mb-3">🔵 Mavi Konteyner - Kağız və Karton</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Qəzet və jurnallar</li>
+                        <li>Karton qutular</li>
+                        <li>Ofis kağızları</li>
+                        <li>Kitablar və dəftərlər</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">🟡 Sarı Konteyner - Plastik və Metal</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Plastik butulkalar</li>
+                        <li>Alüminium qutular</li>
+                        <li>Plastik qablaşdırma materialları</li>
+                        <li>Metal konservlər</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">🟢 Yaşıl Konteyner - Şüş��</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Şüşə butulkalar</li>
+                        <li>Şüşə bankalar</li>
+                        <li>Şüşə qablar</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">⚫ Qara Konteyner - Qarışıq Tullantılar</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Qida tullantıları</li>
+                        <li>Çirkli kağızlar</li>
+                        <li>Digər təkrar emal olunmayan materiallar</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">💡 Tövsiyələr</h4>
+                    <ul class="list-disc ml-6 space-y-1">
+                        <li>Tullantıları atmadan əvvəl yaxşı təmizləyin</li>
+                        <li>Plastik qapaqları ayırın</li>
+                        <li>Karton qutuları yığcam şəkildə saxlayın</li>
+                        <li>Təhlükəli tullantıları xüsusi məntəqələrə aparın</li>
+                    </ul>
+                `
+            },
+            water: {
+                title: "💧 Su Qənaəti",
+                content: `
+                    <h4 class="text-lg font-bold mb-3">Su Qənaəti Niyə Vacibdir?</h4>
+                        <li>Su sızmasını dərhal təmir edin (ayda 3000 litr qənaət)</li>
+                        <li>Çənli paltaryuyan və qabyuyan maşınlardan istifadə edin</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">🌱 Bağçada Su Qənaəti</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Bitkiləri səhər tezdən və ya axşam suvarın</li>
+                        <li>Damcı sulama sistemindən istifadə edin</li>
+                        <li>Torpağa mulç əlavə edərək nəmliyi saxlayın</li>
+                        <li>Yerli və quraqlığa davamlı bitkilər əkin</li>
+                        <li>Yağış suyunu toplayıb istifadə edin</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">🏢 İş Yerində Su Qənaəti</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Su sızmasını dərhal bildirin</li>
+                        <li>Avtomatik kranlardan istifadə edin</li>
+                        <li>Su qənaətli avadanlıqlar quraşdırın</li>
+                        <li>İşçilərə su qənaəti haqqında məlumat verin</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">📊 Faktlar</h4>
+                    <ul class="list-disc ml-6 space-y-1">
+                        <li>Dünyadakı suyun yalnız 1%-i içməli sudur</li>
+                        <li>Bir damcı sudan dəqiqədə 15 litr itki baş verir</li>
+                        <li>Su qənaəti ilə evdə 30-50% azaltma mümkündür</li>
+                        <li>Orta ailə ayda 300-400 litr su israf edir</li>
+                    </ul>
+                `
+            },
+            forest: {
+                title: "🌳 Meşələrin Qorunması",
+                content: `
+                    <h4 class="text-lg font-bold mb-3">Meşələr Niyə Vacibdir?</h4>
+                    <p class="mb-4">Meşələr planetimizin "ağciyərləri"dir. Onlar oksigen istehsal edir, karbon qazını udur, su mənbələrini qoruyur və milyonlarla növün yaşayış mühitini təmin edir.</p>
+                    
+                    <h4 class="text-lg font-bold mb-3">🌍 Meşələrin Faydaları</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Havanı təmizləyir və oksigen istehsal edir</li>
+                        <li>İqlim dəyişikliyinə qarşı mübarizədə kömək edir</li>
+                        <li>Su dövriyyəsini tənzimləyir</li>
+                        <li>Torpaq eroziyasının qarşısını alır</li>
+                        <li>Bioloji müxtəliflik üçün yaşayış mühiti təmin edir</li>
+                        <li>İnsanlara qida və resurs verir</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">⚠️ Meşələrə Təhdidlər</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Qeyri-qanuni ağac kəsilməsi</li>
+                        <li>Meşə yanğınları</li>
+                        <li>Şəhərləşmə və kənd təsərrüfatı genişlənməsi</li>
+                        <li>İqlim dəyişikliyi</li>
+                        <li>Zərərverici və xəstəliklər</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">🛡️ Meşələri Necə Qoruya Bilərik?</h4>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Ağac əkmə kampaniyalarına qatılın</li>
+                        <li>Kağız istehlakını azaldın və təkrar emal edin</li>
+                        <li>Davamlı mənbələrdən odun məhsulları alın</li>
+                        <li>Meşə yanğınlarının qarşısını almaq üçün ehtiyatlı olun</li>
+                        <li>Yerli meşə qorunması layihələrini dəstəkləyin</li>
+                        <li>Meşə haqqında məlumatlılığı artırın</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">🌱 Azərbaycanda Meşələr</h4>
+                    <p class="mb-2">Azərbaycanın 11%-i meşə ilə örtülüdür. Əsas meşə massivləri:</p>
+                    <ul class="list-disc ml-6 mb-4 space-y-1">
+                        <li>Lənkəran-Astara meşələri (subtropik)</li>
+                        <li>Şəki-Zaqatala meşələri (dağ meşələri)</li>
+                        <li>Quba-Qusar meşələri</li>
+                        <li>Talış meşələri</li>
+                    </ul>
+
+                    <h4 class="text-lg font-bold mb-3">📊 Faktlar</h4>
+                    <ul class="list-disc ml-6 space-y-1">
+                        <li>Hər il 10 milyon hektar meşə itirilir</li>
+                        <li>Meşələr dünya karbon emisiyalarının 15%-ni udur</li>
+                        <li>1.6 milyard insan meşələrdən doğrudan asılıdır</li>
+                        <li>1 hektar meşə ildə 20 ton oksigen istehsal edir</li>
+                    </ul>
+                `
+            }
+        };
+
+        const quizzes = {
+            waste: {
+                title: "Tullantıların İdarə Olunması Testi",
+                questions: [
+                    {
+                        question: "Hansı material təkrar emal üçün ən uyğundur?",
+                        options: ["Şüşə", "Qarışıq tullantı", "Qida qalıqları", "Çirkli kağız"],
+                        correct: 0
+                    },
+                    {
+                        question: "Plastik butulkanı hansı konteynerə atmalıyıq?",
+                        options: ["Qara", "Sarı", "Mavi", "Yaşıl"],
+                        correct: 1
+                    },
+                    {
+                        question: "Kağız təkrar emal edildikdə nə qədər su qənaət olur?",
+                        options: ["10%", "30%", "50%", "70%"],
+                        correct: 3
+                    },
+                    {
+                        question: "Hansı tullantı təhlükəli hesab edilir?",
+                        options: ["Kağız", "Batareya", "Karton", "Şüşə"],
+                        correct: 1
+                    },
+                    {
+                        question: "Kompost nə üçün istifadə olunur?",
+                        options: ["Yanacaq", "Gübrə", "Tikinti", "Qablaşdırma"],
+                        correct: 1
+                    },
+                    {
+                        question: "Bir şüşə butulka neçə dəfə təkrar emal oluna bilər?",
+                        options: ["1 dəfə", "5 dəfə", "10 dəfə", "Sonsuz"],
+                        correct: 3
+                    },
+                    {
+                        question: "E-tullantılar hansı kateqoriyaya aiddir?",
+                        options: ["Adi tullantı", "Təhlükəli tullantı", "Qarışıq tullantı", "Təkrar emal"],
+                        correct: 1
+                    },
+                    {
+                        question: "Plastik parçalanmaq üçün neçə il lazımdır?",
+                        options: ["10 il", "50 il", "100 il", "450 il"],
+                        correct: 3
+                    },
+                    {
+                        question: "Təkrar emal simvolu neçə oxdan ibarətdir?",
+                        options: ["2", "3", "4", "5"],
+                        correct: 1
+                    },
+                    {
+                        question: "Qida tullantılarını azaltmağın ən yaxşı yolu hansıdır?",
+                        options: ["Çox almaq", "Planlaşdırmaq", "Atmaq", "Gizlətmək"],
+                        correct: 1
+                    }
+                ]
+            },
+            climate: {
+                title: "İqlim Dəyişikliyi Bilgi Testi",
+                questions: [
+                    {
+                        question: "Əsas istixana qazı hansıdır?",
+                        options: ["Oksigen", "Karbon qazı", "Azot", "Hidrogen"],
+                        correct: 1
+                    },
+                    {
+                        question: "Qlobal istiləşmənin əsas səbəbi nədir?",
+                        options: ["Vulkan püskürməsi", "Günəş fəaliyyəti", "İnsan fəaliyyəti", "Təbii dövr"],
+                        correct: 2
+                    },
+                    {
+                        question: "Yağış meşələri niyə vacibdir?",
+                        options: ["Gözəldir", "Turizm", "Karbon udur", "Ucuzdur"],
+                        correct: 2
+                    },
+                    {
+                        question: "Hansı nəqliyyat vasitəsi ən az emissiya buraxır?",
+                        options: ["Avtomobil", "Təyyarə", "Velosiped", "Gəmi"],
+                        correct: 2
+                    },
+                    {
+                        question: "Buz örtüklərinin əriməsi nəyə səbəb olur?",
+                        options: ["Dəniz səviyyəsi azalır", "Dəniz səviyyəsi artır", "Dəyişməz qalır", "Donur"],
+                        correct: 1
+                    },
+                    {
+                        question: "Enerji qənaəti üçün hansı lampa daha yaxşıdır?",
+                        options: ["Kvars", "LED", "Neon", "Flüoresan"],
+                        correct: 1
+                    },
+                    {
+                        question: "Ozon qatı nəyi qoruyur?",
+                        options: ["Torpağı", "Suyu", "Ultrabənövşəyidən", "Küləkdən"],
+                        correct: 2
+                    },
+                    {
+                        question: "Bərpa olunan enerji mənbəyi hansıdır?",
+                        options: ["Kömür", "Neft", "Günəş", "Qaz"],
+                        correct: 2
+                    },
+                    {
+                        question: "Son 100 ildə qlobal temperatur neçə dərəcə artıb?",
+                        options: ["0.5°C", "1°C", "2°C", "5°C"],
+                        correct: 1
+                    },
+                    {
+                        question: "Karbon izini azaltmaq üçün nə etməli?",
+                        options: ["Çox səyahət", "Enerji israf", "İctimai nəqliyyat", "Plastik istifadə"],
+                        correct: 2
+                    }
+                ]
+            }
+        };
+
+        window.initMap = function() {
+            const azerbaijan = { lat: 40.4093, lng: 47.5769 };
+            
+            map = new google.maps.Map(document.getElementById('googleMap'), {
+                zoom: 7,
+                center: azerbaijan,
+                mapTypeControl: true,
+                streetViewControl: false,
+                fullscreenControl: true,
+                styles: [
+                    {
+                        featureType: "poi",
+                        elementType: "labels",
+                        stylers: [{ visibility: "off" }]
+                    }
+                ]
+            });
+
+            if (allProblems.length > 0) {
+                renderMapMarkers(allProblems);
+            }
+        };
+
+        function renderMyReports(problems) {
+            const container = document.getElementById('myReportsList');
+            const emptyMessage = document.getElementById('emptyReportsMessage');
+
+            // Remove all mock cards (those without data-problem-id)
+            Array.from(container.children).forEach(child => {
+                if (!child.dataset.problemId) {
+                    child.remove();
+                }
+            });
+
+            if (!problems || problems.length === 0) {
+                emptyMessage.classList.remove('hidden');
+                return;
+            }
+
+            emptyMessage.classList.add('hidden');
+
+            const existingReports = new Map(
+                [...container.children].map(el => [el.dataset.problemId, el])
+            );
+
+            const sortedProblems = [...problems].sort((a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+
+            sortedProblems.forEach(problem => {
+                // Use a unique id for the card
+                const id = problem.__backendId || problem.id;
+                if (!existingReports.has(id)) {
+                    const reportCard = createReportCard(problem);
+                    reportCard.dataset.problemId = id;
+                    container.appendChild(reportCard);
+                } else {
+                    updateReportCard(existingReports.get(id), problem);
+                    existingReports.delete(id);
+                }
+            });
+
+            existingReports.forEach(el => el.remove());
+        }
+
+        function renderRecentProblems(problems) {
+            const container = document.getElementById('recentProblems');
+            const recentProblems = problems.slice(-6).reverse();
+
+            // Remove all mock cards (those without data-problem-id)
+            Array.from(container.children).forEach(child => {
+                if (!child.dataset.problemId) {
+                    child.remove();
+                }
+            });
+
+            const existingCards = new Map(
+                [...container.children].map(el => [el.dataset.problemId, el])
+            );
+
+            recentProblems.forEach(problem => {
+                const id = problem.__backendId || problem.id;
+                if (!existingCards.has(id)) {
+                    const card = createProblemCard(problem);
+                    card.dataset.problemId = id;
+                    container.insertBefore(card, container.firstChild);
+                } else {
+                    updateProblemCard(existingCards.get(id), problem);
+                    existingCards.delete(id);
+                }
+            });
+
+            existingCards.forEach(el => el.remove());
+        }
+
+        function updateProblemInfoBar(problems) {
+            const total = problems.length;
+            let pending = 0, inProgress = 0, resolved = 0;
+            for (const p of problems) {
+                if (p.status === 'pending') pending++;
+                else if (p.status === 'in-progress') inProgress++;
+                else if (p.status === 'resolved') resolved++;
+            }
+            document.getElementById('problemCountValue').textContent = total;
+            document.getElementById('pendingCountValue').textContent = pending;
+            document.getElementById('inProgressCountValue').textContent = inProgress;
+            document.getElementById('resolvedCountValue').textContent = resolved;
+        }
+
+        const dataHandler = {
+            onDataChanged(data) {
+                allProblems = data;
+                if (map) {
+                    renderMapMarkers(data);
+                }
+                renderRecentProblems(data);
+                renderMyReports(data);
+                updateProblemInfoBar(data);
+            }
+        };
+
+        async function onConfigChange(config) {
+            const customFont = config.font_family || defaultConfig.font_family;
+            const baseSize = config.font_size || defaultConfig.font_size;
+            const baseFontStack = 'system-ui, -apple-system, sans-serif';
+            
+            document.body.style.backgroundColor = config.background_color || defaultConfig.background_color;
+            document.body.style.color = config.text_color || defaultConfig.text_color;
+            document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+            document.body.style.fontSize = `${baseSize}px`;
+
+            const siteTitle = document.getElementById('siteTitle');
+            if (siteTitle) {
+                siteTitle.textContent = config.site_title || defaultConfig.site_title;
+                siteTitle.style.fontSize = `${baseSize * 1.875}px`;
+                siteTitle.style.fontFamily = `${customFont}, ${baseFontStack}`;
+            }
+
+            const siteSlogan = document.getElementById('siteSlogan');
+            if (siteSlogan) {
+                siteSlogan.textContent = config.site_slogan || defaultConfig.site_slogan;
+                siteSlogan.style.fontSize = `${baseSize * 0.875}px`;
+            }
+
+            const addProblemButtonText = document.getElementById('addProblemButtonText');
+            if (addProblemButtonText) {
+                addProblemButtonText.textContent = config.add_problem_button || defaultConfig.add_problem_button;
+            }
+
+            const mapSectionTitle = document.getElementById('mapSectionTitle');
+            if (mapSectionTitle) {
+                mapSectionTitle.textContent = config.map_section_title || defaultConfig.map_section_title;
+                mapSectionTitle.style.fontSize = `${baseSize * 1.5}px`;
+                mapSectionTitle.style.fontFamily = `${customFont}, ${baseFontStack}`;
+            }
+
+            const myReportsTitle = document.getElementById('myReportsTitle');
+            if (myReportsTitle) {
+                myReportsTitle.textContent = config.my_reports_title || defaultConfig.my_reports_title;
+                myReportsTitle.style.fontSize = `${baseSize * 1.5}px`;
+                myReportsTitle.style.fontFamily = `${customFont}, ${baseFontStack}`;
+            }
+
+            const volunteerSectionTitle = document.getElementById('volunteerSectionTitle');
+            if (volunteerSectionTitle) {
+                volunteerSectionTitle.textContent = config.volunteer_section_title || defaultConfig.volunteer_section_title;
+                volunteerSectionTitle.style.fontSize = `${baseSize * 1.5}px`;
+                volunteerSectionTitle.style.fontFamily = `${customFont}, ${baseFontStack}`;
+            }
+
+            const addProblemBtn = document.getElementById('addProblemBtn');
+            if (addProblemBtn) {
+                addProblemBtn.style.backgroundColor = config.primary_action_color || defaultConfig.primary_action_color;
+            }
+
+            const ecoGradients = document.querySelectorAll('.eco-gradient');
+            ecoGradients.forEach(el => {
+                el.style.background = `linear-gradient(135deg, ${config.secondary_action_color || defaultConfig.secondary_action_color} 0%, ${config.primary_action_color || defaultConfig.primary_action_color} 100%)`;
+            });
+
+            const surfaces = document.querySelectorAll('.bg-white');
+            surfaces.forEach(el => {
+                if (!el.classList.contains('modal-content')) {
+                    el.style.backgroundColor = config.surface_color || defaultConfig.surface_color;
+                }
+            });
+
+            const headings = document.querySelectorAll('h1, h2, h3, h4');
+            headings.forEach(el => {
+                el.style.fontFamily = `${customFont}, ${baseFontStack}`;
+            });
+        }
+
+        async function initializeApp() {
+            if (window.dataSdk) {
+                const initResult = await window.dataSdk.init(dataHandler);
+                if (!initResult.isOk) {
+                    showToast('❌', 'Sistem xətası baş verdi');
+                }
+            }
+
+            if (window.elementSdk) {
+                window.elementSdk.init({
+                    defaultConfig,
+                    onConfigChange,
+                    mapToCapabilities: (config) => ({
+                        recolorables:
+                        [
+                            {
+                                get: () => config.background_color || defaultConfig.background_color,
+                                set: (value) => {
+                                    window.elementSdk.config.background_color = value;
+                                    window.elementSdk.setConfig({ background_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.surface_color || defaultConfig.surface_color,
+                                set: (value) => {
+                                    window.elementSdk.config.surface_color = value;
+                                    window.elementSdk.setConfig({ surface_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.text_color || defaultConfig.text_color,
+                                set: (value) => {
+                                    window.elementSdk.config.text_color = value;
+                                    window.elementSdk.setConfig({ text_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                                set: (value) => {
+                                    window.elementSdk.config.primary_action_color = value;
+                                    window.elementSdk.setConfig({ primary_action_color: value });
+                                }
+                            },
+                            {
+                                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                                set: (value) => {
+                                    window.elementSdk.config.secondary_action_color = value;
+                                    window.elementSdk.setConfig({ secondary_action_color: value });
+                                }
+                            }
+                        ],
+                        borderables: [],
+                        fontEditable: {
+                            get: () => config.font_family || defaultConfig.font_family,
+                            set: (value) => {
+                                window.elementSdk.config.font_family = value;
+                                window.elementSdk.setConfig({ font_family: value });
+                            }
+                        },
+                        fontSizeable: {
+                            get: () => config.font_size || defaultConfig.font_size,
+                            set: (value) => {
+                                window.elementSdk.config.font_size = value;
+                                window.elementSdk.setConfig({ font_size: value });
+                            }
+                        }
+                    }),
+                    mapToEditPanelValues: (config) => new Map([
+                        ["site_title", config.site_title || defaultConfig.site_title],
+                        ["site_slogan", config.site_slogan || defaultConfig.site_slogan],
+                        ["add_problem_button", config.add_problem_button || defaultConfig.add_problem_button],
+                        ["map_section_title", config.map_section_title || defaultConfig.map_section_title],
+                        ["my_reports_title", config.my_reports_title || defaultConfig.my_reports_title],
+                        ["volunteer_section_title", config.volunteer_section_title || defaultConfig.volunteer_section_title]
+                    ])
+                });
+            }
+
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+                    switchTab(targetTab);
+                });
+            });
+
+            const addProblemBtn = document.getElementById('addProblemBtn');
+            addProblemBtn.addEventListener('click', () => {
+                openModal();
+            });
+
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            closeModalBtn.addEventListener('click', () => {
+                closeModal();
+            });
+
+            const cancelModalBtn = document.getElementById('cancelModalBtn');
+            cancelModalBtn.addEventListener('click', () => {
+                closeModal();
+            });
+
+            const addProblemModal = document.getElementById('addProblemModal');
+            addProblemModal.addEventListener('click', (e) => {
+                if (e.target === addProblemModal) {
+                    closeModal();
+                }
+            });
+
+            const categoryButtons = document.querySelectorAll('.category-button');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    categoryButtons.forEach(btn => btn.classList.remove('selected'));
+                    button.classList.add('selected');
+                    selectedCategory = button.dataset.category;
+                    selectedCategoryEmoji = button.dataset.emoji;
+                });
+            });
+
+            const problemForm = document.getElementById('problemForm');
+            problemForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await handleFormSubmit();
+            });
+        }
+
+        function switchTab(tabName) {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
+            const activeContent = document.getElementById(`${tabName}Tab`);
+
+            if (activeButton) activeButton.classList.add('active');
+            if (activeContent) activeContent.classList.add('active');
+        }
+
+        function openModal() {
+            const modal = document.getElementById('addProblemModal');
+            modal.classList.add('active');
+            document.getElementById('problemForm').reset();
+            selectedCategory = '';
+            selectedCategoryEmoji = '';
+            document.querySelectorAll('.category-button').forEach(btn => btn.classList.remove('selected'));
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('addProblemModal');
+            modal.classList.remove('active');
+        }
+
+        async function handleFormSubmit() {
+            if (!selectedCategory) {
+                showToast('⚠️', 'Zəhmət olmasa kateqoriya seçin');
+                return;
+            }
+
+            if (allProblems.length >= 999) {
+                showToast('⚠️', 'Maksimum limit (999) əldə edildi. Əvvəlcə bəzi problemləri silin.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitProblemBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Göndərilir...';
+
+            const title = document.getElementById('problemTitle').value;
+            const description = document.getElementById('problemDescription').value;
+            const reporter = document.getElementById('reporterName').value;
+
+            const latitude = 40.0 + Math.random() * 1.5;
+            const longitude = 46.0 + Math.random() * 4.0;
+
+            const newProblem = {
+                id: Date.now().toString(),
+                title,
+                description,
+                category: selectedCategory,
+                latitude,
+                longitude,
+                status: 'pending',
+                reporter,
+                createdAt: new Date().toISOString(),
+                photoEmoji: selectedCategoryEmoji
+            };
+
+            if (window.dataSdk) {
+                const result = await window.dataSdk.create(newProblem);
+
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Göndər';
+
+                if (result.isOk) {
+                    closeModal();
+                    showToast('✅', 'Problem uğurla bildirildi!');
+                    if (!newProblem.__backendId) newProblem.__backendId = newProblem.id;
+                    allProblems = [...allProblems, newProblem];
+                    renderRecentProblems(allProblems);
+                    renderMyReports(allProblems);
+                    updateProblemInfoBar(allProblems);
+                    switchTab('myreports');
+                } else {
+                    showToast('❌', 'Xəta baş verdi. Yenidən cəhd edin.');
+                }
+            }
+        }
+
+        function showEducationDetail(topic) {
+            const modal = document.getElementById('educationDetailModal');
+            const titleEl = document.getElementById('educationDetailTitle');
+            const contentEl = document.getElementById('educationDetailContent');
+            
+            const content = educationContent[topic];
+            titleEl.textContent = content.title;
+            contentEl.innerHTML = content.content;
+            
+            modal.classList.add('active');
+        }
+
+        function closeEducationDetail() {
+            const modal = document.getElementById('educationDetailModal');
+            modal.classList.remove('active');
+        }
+
+        function startQuiz(quizType) {
+            currentQuiz = quizzes[quizType];
+            currentQuestionIndex = 0;
+            quizScore = 0;
+            
+            const modal = document.getElementById('quizModal');
+            const titleEl = document.getElementById('quizTitle');
+            titleEl.textContent = currentQuiz.title;
+            
+            showQuestion();
+            modal.classList.add('active');
+        }
+
+        function showQuestion() {
+            const question = currentQuiz.questions[currentQuestionIndex];
+            const contentEl = document.getElementById('quizContent');
+            
+            contentEl.innerHTML = `
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-semibold text-gray-600">Sual ${currentQuestionIndex + 1} / ${currentQuiz.questions.length}</span>
+                        <span class="text-sm font-semibold text-green-600">Bal: ${quizScore}</span>
+                    </div>
+                    <h4 class="text-lg font-bold text-gray-800 mb-4">${question.question}</h4>
+                    <div class="space-y-3">
+                        ${question.options.map((option, index) => `
+                            <button onclick="selectAnswer(${index})" class="quiz-option w-full text-left p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 transition-colors">
+                                ${option}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function selectAnswer(selectedIndex) {
+            const question = currentQuiz.questions[currentQuestionIndex];
+            const options = document.querySelectorAll('.quiz-option');
+            
+            options.forEach((option, index) => {
+                option.disabled = true;
+                if (index === question.correct) {
+                    option.classList.add('correct');
+                } else if (index === selectedIndex && selectedIndex !== question.correct) {
+                    option.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedIndex === question.correct) {
+                quizScore += 10;
+                showToast('✅', 'Düzgün cavab!');
+            } else {
+                showToast('❌', 'Səhv cavab!');
+            }
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < currentQuiz.questions.length) {
+                    showQuestion();
+                } else {
+                    showQuizResult();
+                }
+            }, 1500);
+        }
+
+        function showQuizResult() {
+            const contentEl = document.getElementById('quizContent');
+            const totalQuestions = currentQuiz.questions.length;
+            const percentage = (quizScore / (totalQuestions * 10)) * 100;
+            
+            let message = '';
+            let emoji = '';
+            
+            if (percentage >= 80) {
+                message = 'Əla! Siz ekologiya üzrə yaxşı biliklərə sahibsiniz!';
+                emoji = '🏆';
+            } else if (percentage >= 60) {
+                message = 'Yaxşı! Daha çox öyrənə bilərsiniz.';
+                emoji = '👍';
+            } else {
+                message = 'Daha çox öyrənməlisiniz. Maarifləndirmə bölməsinə baxın!';
+                emoji = '📚';
+            }
+            
+            contentEl.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="text-6xl mb-4">${emoji}</div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">Test Tamamlandı!</h3>
+                    <div class="text-4xl font-bold text-green-600 mb-2">${quizScore} / ${totalQuestions * 10}</div>
+                    <div class="text-lg text-gray-600 mb-6">${percentage.toFixed(0)}% Uğur</div>
+                    <p class="text-gray-700 mb-6">${message}</p>
+                    <button onclick="closeQuiz()" class="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                        Bağla
+                    </button>
+                </div>
+            `;
+        }
+
+        function closeQuiz() {
+            const modal = document.getElementById('quizModal');
+            modal.classList.remove('active');
+        }
+
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            showToast('✅', 'Mesajınız göndərildi! Tezliklə sizinlə əlaqə saxlayacağıq.');
+            e.target.reset();
+        }
+
+        function renderMapMarkers(problems) {
+            if (!map) return;
+
+            markers.forEach(marker => marker.setMap(null));
+            markers = [];
+
+            problems.forEach(problem => {
+                const marker = new google.maps.Marker({
+                    position: { lat: problem.latitude, lng: problem.longitude },
+                    map: map,
+                    title: problem.title,
+                    label: {
+                        text: problem.photoEmoji,
+                        fontSize: '24px'
+                    },
+                    icon: {
+                        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40">
+                                <circle cx="20" cy="20" r="18" fill="white" stroke="#10b981" stroke-width="2"/>
+                                <text x="20" y="28" font-size="20" text-anchor="middle">${problem.photoEmoji}</text>
+                            </svg>
+                        `),
+                        scaledSize: new google.maps.Size(40, 40),
+                        anchor: new google.maps.Point(20, 20)
+                    }
+                });
+
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="padding: 8px; max-width: 200px;">
+                            <h3 style="font-weight: bold; margin-bottom: 4px; color: #1f2937;">${problem.title}</h3>
+                            <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 4px;">${problem.description}</p>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #9ca3af;">
+                                <span>📍 ${problem.category}</span>
+                                <span>${formatDate(problem.createdAt)}</span>
+                            </div>
+                        </div>
+                    `
+                });
+
+                marker.addListener('click', () => {
+                    infoWindow.open(map, marker);
+                });
+
+                markers.push(marker);
+            });
+        }
+
+        function renderRecentProblems(problems) {
+            const container = document.getElementById('recentProblems');
+            const recentProblems = problems.slice(-6).reverse();
+
+            // Remove all mock cards (those without data-problem-id)
+            Array.from(container.children).forEach(child => {
+                if (!child.dataset.problemId) {
+                    child.remove();
+                }
+            });
+
+            const existingCards = new Map(
+                [...container.children].map(el => [el.dataset.problemId, el])
+            );
+
+            recentProblems.forEach(problem => {
+                const id = problem.__backendId || problem.id;
+                if (!existingCards.has(id)) {
+                    const card = createProblemCard(problem);
+                    card.dataset.problemId = id;
+                    container.insertBefore(card, container.firstChild);
+                } else {
+                    updateProblemCard(existingCards.get(id), problem);
+                    existingCards.delete(id);
+                }
+            });
+
+            existingCards.forEach(el => el.remove());
+        }
+
+        function createProblemCard(problem) {
+            const card = document.createElement('div');
+            card.className = 'problem-card bg-white rounded-xl shadow-lg overflow-hidden';
+            card.dataset.problemId = problem.__backendId;
+
+            const statusClass = `status-${problem.status}`;
+            const statusText = getStatusText(problem.status);
+
+            card.innerHTML = `
+                <div class="bg-gradient-to-r from-green-400 to-teal-500 h-40 flex items-center justify-center">
+                    <span style="font-size: 4rem;">${problem.photoEmoji}</span>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-start justify-between mb-2">
+                        <h3 class="font-bold text-gray-800 flex-1">${problem.title}</h3>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3 line-clamp-2">${problem.description}</p>
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span>📍 ${problem.category}</span>
+                        <span>${formatDate(problem.createdAt)}</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function updateProblemCard(card, problem) {
+            const statusBadge = card.querySelector('.status-badge');
+            if (statusBadge) {
+                statusBadge.className = `status-badge status-${problem.status}`;
+                statusBadge.textContent = getStatusText(problem.status);
+            }
+
+            const title = card.querySelector('h3');
+            if (title) title.textContent = problem.title;
+
+            const description = card.querySelector('p');
+            if (description) description.textContent = problem.description;
+        }
+
+        function createReportCard(problem) {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-xl shadow-lg p-6';
+            card.dataset.problemId = problem.__backendId;
+
+            const statusClass = `status-${problem.status}`;
+            const statusText = getStatusText(problem.status);
+
+            card.innerHTML = `
+                <div class="flex items-start gap-4">
+                    <div class="text-5xl">${problem.photoEmoji}</div>
+                    <div class="flex-1">
+                        <div class="flex items-start justify-between mb-2">
+                            <h3 class="font-bold text-lg text-gray-800">${problem.title}</h3>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">${problem.description}</p>
+                        <div class="flex items-center gap-4 text-xs text-gray-500">
+                            <span>📍 ${problem.category}</span>
+                            <span>👤 ${problem.reporter}</span>
+                            <span>📅 ${formatDate(problem.createdAt)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+
+            return card;
+        }
+
+        function updateReportCard(card, problem) {
+            const statusBadge = card.querySelector('.status-badge');
+            if (statusBadge) {
+                statusBadge.className = `status-badge status-${problem.status}`;
+                statusBadge.textContent = getStatusText(problem.status);
+            }
+
+            const title = card.querySelector('h3');
+            if (title) title.textContent = problem.title;
+
+            const description = card.querySelector('p');
+            if (description) description.textContent = problem.description;
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': 'Baxışda',
+                'in-progress': 'İcrada',
+                'resolved': 'Həll olunub',
+                'rejected': 'Rədd edilib'
+            };
+            return statusMap[status] || 'Baxışda';
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 60) return `${diffMins} dəqiqə əvvəl`;
+            if (diffHours < 24) return `${diffHours} saat əvvəl`;
+            if (diffDays < 7) return `${diffDays} gün əvvəl`;
+            
+            return date.toLocaleDateString('az-AZ', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        function showToast(icon, message) {
+            const toast = document.getElementById('toast');
+            const toastIcon = document.getElementById('toastIcon');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toastIcon.textContent = icon;
+            toastMessage.textContent = message;
+
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Donate Modal Logic ---
+        const donateBtn = document.getElementById('donateBtn');
+        const donateModal = document.getElementById('donateModal');
+        const closeDonateModal = document.getElementById('closeDonateModal');
+        const donateForm = document.getElementById('donateForm');
+        const donateType = document.getElementById('donateType');
+        const donateAmount = document.getElementById('donateAmount');
+        const donateImpact = document.getElementById('donateImpact');
+
+        function updateDonateImpact() {
+            const type = donateType.value;
+            const amount = parseInt(donateAmount.value, 10) || 0;
+            if (type === 'tree') {
+                donateImpact.textContent = `🌳 Siz ${amount} ağac əkilməsinə dəstək olacaqsınız!`;
+            } else if (type === 'water') {
+                donateImpact.textContent = `💧 Siz ${amount} su təmizləmə aksiyasına dəstək olacaqsınız!`;
+            } else if (type === 'recycle') {
+                donateImpact.textContent = `♻️ Siz ${amount * 5} kq tullantının təkrar emalına dəstək olacaqsınız!`;
+            } else if (type === 'education') {
+                donateImpact.textContent = `📚 Siz ${amount} şagirdin maarifləndirilməsinə dəstək olacaqsınız!`;
+            } else {
+                donateImpact.textContent = "";
+            }
+        }
+        donateBtn.onclick = () => { donateModal.classList.remove('hidden'); updateDonateImpact(); };
+        closeDonateModal.onclick = () => donateModal.classList.add('hidden');
+        donateType.onchange = updateDonateImpact;
+        donateAmount.oninput = updateDonateImpact;
+        donateForm.onsubmit = (e) => {
+            e.preventDefault();
+            alert('Təşəkkür edirik! Dəstəyiniz qeydə alındı. (Demo)');
+            donateModal.classList.add('hidden');
+        };
+
+        // --- AI Chat Modal Logic ---
+        const aiChatBtn = document.getElementById('aiChatBtn');
+        const aiChatModal = document.getElementById('aiChatModal');
+        const closeAiChat = document.getElementById('closeAiChat');
+        const aiChatForm = document.getElementById('aiChatForm');
+        const aiChatInput = document.getElementById('aiChatInput');
+        const aiChatHistory = document.getElementById('aiChatHistory');
+
+        const aiReplies = [
+            [
+                "Gözəl sualdır! 🌱",
+                "Maraqlı məlumat: ",
+                "Baxın, belədir: ",
+                "Sualınıza cavab: ",
+                "Ekoloji məsləhət: "
+            ],
+            [
+                "Tullantıları azaltmaq üçün təkrar istifadə edin.",
+                "Kiçik addımlar böyük dəyişiklik yaradır.",
+                "Ağaclar təmiz hava üçün vacibdir.",
+                "Suya qənaət etmək gələcəyimiz üçün önəmlidir.",
+                "Təmizlik aksiyalarına qoşulmaq faydalıdır."
+            ],
+            [
+                "Dəstək olmaq üçün yaşıl düymədən istifadə edə bilərsiniz!",
+                "Ekologiya və xəritə barədə istədiyinizi soruşa bilərsiniz.",
+                "Ətraf mühitə qayğı göstərdiyiniz üçün təşəkkürlər!",
+                "Birlikdə daha yaşıl dünya mümkündür.",
+                "Öyrənməyə davam edin!"
+            ]
+        ];
+
+        function getRandomReply(userMsg) {
+            const part1 = aiReplies[0][Math.floor(Math.random() * aiReplies[0].length)];
+            const part2 = aiReplies[1][Math.floor(Math.random() * aiReplies[1].length)];
+            const part3 = aiReplies[2][Math.floor(Math.random() * aiReplies[2].length)];
+            return `${part1} ${part2} ${part3}`;
+        }
+
+        aiChatBtn.onclick = () => { aiChatModal.classList.remove('hidden'); aiChatInput.focus(); };
+        closeAiChat.onclick = () => aiChatModal.classList.add('hidden');
+        aiChatForm.onsubmit = (e) => {
+            e.preventDefault();
+            const userMsg = aiChatInput.value.trim();
+            if (!userMsg) return;
+            // Add user message
+            const userDiv = document.createElement('div');
+            userDiv.className = "text-right";
+            userDiv.innerHTML = `<span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-lg">${userMsg}</span>`;
+            aiChatHistory.appendChild(userDiv);
+            aiChatInput.value = '';
+            aiChatHistory.scrollTop = aiChatHistory.scrollHeight;
+            // Simulate AI reply
+            setTimeout(() => {
+                const aiDiv = document.createElement('div');
+                aiDiv.className = "text-left";
+                aiDiv.innerHTML = `<span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-lg">${getRandomReply(userMsg)}</span>`;
+                aiChatHistory.appendChild(aiDiv);
+                aiChatHistory.scrollTop = aiChatHistory.scrollHeight;
+            }, 700 + Math.random() * 600);
+        };
+
+        // --- Dark/Light Mode Toggle Logic ---
+        const themeToggleBtn = document.getElementById('themeToggleBtn');
+        const body = document.body;
+
+        themeToggleBtn.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            // Save user preference to localStorage
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                themeToggleBtn.innerHTML = '<span class="text-2xl">🌙</span>';
+            } else {
+                localStorage.setItem('theme', 'light');
+                themeToggleBtn.innerHTML = '<span class="text-2xl">☀️</span>';
+            }
+        });
+
+        // Check for saved theme preference on load
+        if (localStorage.getItem('theme') === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggleBtn.innerHTML = '<span class="text-2xl">🌙</span>';
+        } else {
+            themeToggleBtn.innerHTML = '<span class="text-2xl">☀️</span>';
+        }
+
+        // Initialize app after all functions are defined and theme is set
+        initializeApp();
+
+         /**
+         * @fileoverview Google Maps Initialization Script
+         * Initializes and displays the map on the page.
+         */
+
+        // Function to initialize the Google Map
+        function initMap() {
+            // Default location: San Francisco, CA
+            const defaultLocation = { lat: 37.7749, lng: -122.4194 };
+
+            // Map options
+            const mapOptions = {
+                center: defaultLocation,
+                zoom: 12, // Zoom level (1=world, 20=street level)
+                mapId: "DEMO_MAP_ID" // Placeholder ID, needed for some Google Maps features
+            };
+
+            // Get the map element
+            const mapDiv = document.getElementById('map');
+            if (!mapDiv) {
+                console.error("Map div not found!");
+                return;
+            }
+
+            // Create a new map instance and place it in the #map div
+            const map = new google.maps.Map(mapDiv, mapOptions);
+
+            // Add a marker for the default location
+            new google.maps.Marker({
+                position: defaultLocation,
+                map: map,
+                title: "San Francisco"
+            });
+        }
+
+        // The callback function `initMap` is specified in the Google Maps script URL
+        // It will be called automatically once the API script loads.
+
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a60be343642aba7',t:'MTc2NDQwNTAyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDicmjtzsB8NX1qbo3vTb_tD1ohqui_K7s&callback=initMap"></script>
+
+ </html>
